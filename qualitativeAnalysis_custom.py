@@ -1019,8 +1019,7 @@ def Save2Npy(file_dir, crop_x_y=None, target_frames=None, frame_size=320):
 
 def convert_dataset_to_npy(src, crop_x_y=None, target_frames=None, frame_size=320):
     path1 = os.path.join(src)
-    return Save2Npy(file_dir=path1, crop_x_y=crop_x_y,
-                     target_frames=target_frames, frame_size=frame_size)
+    Save2Npy(file_dir=path1, crop_x_y=crop_x_y, target_frames=target_frames, frame_size=frame_size)
 
 
 """
@@ -2429,7 +2428,7 @@ qulitative.py
 ###########################################################################################################
 """
 
-def qualitative(args):
+def qualitative():
     mode = "both"
     dataset = 'custom'
     vid_len = 32
@@ -2439,7 +2438,7 @@ def qualitative(args):
     one_hot = False
     lstm_type = 'sepconv' 
 
-    processed = convert_dataset_to_npy(src='./'.format(dataset), crop_x_y=None,
+    convert_dataset_to_npy(src='./'.format(dataset), crop_x_y=None,
                                        target_frames=vid_len, frame_size= dataset_frame_size)
 
     test_generator = DataGenerator(X_path='./processed.npy'.format(dataset),
@@ -2457,7 +2456,7 @@ def qualitative(args):
                                 mode = mode)
 
     model =  getProposedModelC(size=224, seq_len=32, frame_diff_interval = 1, mode="both", lstm_type=lstm_type)
-    model.load_weights(args["weights"]).expect_partial()
+    model.load_weights('./ckpt_all/rwf2000_currentModel').expect_partial()
     model.trainable = False
     abuse_perc = evaluate(model, test_generator)
     return abuse_perc
@@ -2479,12 +2478,9 @@ def evaluate(model, datagen, count = 100):
         abuse_perc = 1 - p
         return abuse_perc
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--weights", default= './ckpt_all/rwf2000_currentModel',help="path to the weights")
-    args = vars(ap.parse_args())
-    abuse_perc = qualitative(args)
+def calculate():
+    abuse_perc = qualitative()
     print(abuse_perc)
     return abuse_perc
 
-main()
+calculate()
