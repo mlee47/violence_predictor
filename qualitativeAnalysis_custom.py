@@ -1,15 +1,13 @@
-import argparse
-from tensorflow.keras.utils import Sequence, to_categorical
+from tensorflow.keras.utils import Sequence
 from tensorflow.keras.preprocessing.image import apply_affine_transform, apply_brightness_shift
 import os
-import cv2
 from tqdm import tqdm
 from tensorflow.keras import backend as K
 from tensorflow.keras import Input
-from tensorflow.keras.layers import Dense, Flatten, Dropout, ZeroPadding3D, ConvLSTM2D, Reshape, BatchNormalization, Activation, Conv2D, LayerNormalization
-from tensorflow.keras.layers import TimeDistributed, RepeatVector,Permute, Multiply, Add
-from tensorflow.keras.applications import MobileNetV2, VGG16
-from tensorflow.keras.layers import ELU, ReLU, LeakyReLU, Lambda, Dense, Bidirectional, Conv3D, GlobalAveragePooling2D, Multiply, MaxPooling3D, MaxPooling2D, Concatenate, Add, AveragePooling2D
+from tensorflow.keras.layers import Flatten, Dropout, ConvLSTM2D, BatchNormalization
+from tensorflow.keras.layers import TimeDistributed
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import LeakyReLU, Dense, MaxPooling2D, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 import tensorflow as tf
@@ -1013,9 +1011,7 @@ def Save2Npy(file_dir, crop_x_y=None, target_frames=None, frame_size=320):
         if target_frames:
             assert (data.shape == (target_frames,
                                    frame_size, frame_size, 3))
-        data = np.uint8(data)
-        np.save("processed.npy", data)
-    return data
+        np.save("processed.npy", np.uint8(data))
 
 def convert_dataset_to_npy(src, crop_x_y=None, target_frames=None, frame_size=320):
     path1 = os.path.join(src)
@@ -2441,7 +2437,7 @@ def qualitative():
     convert_dataset_to_npy(src='./'.format(dataset), crop_x_y=None,
                                        target_frames=vid_len, frame_size= dataset_frame_size)
 
-    test_generator = DataGenerator(X_path='./processed.npy'.format(dataset),
+    test_generator = DataGenerator(X_path='processed.npy'.format(dataset),
                                 batch_size=1,
                                 data_augmentation=False,
                                 shuffle=True,
