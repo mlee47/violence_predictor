@@ -1,0 +1,2 @@
+model_checkpoint_path: "rwf2000_currentModel"
+all_model_checkpoint_paths: "rwf2000_currentModel"
