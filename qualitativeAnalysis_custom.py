@@ -1011,11 +1011,14 @@ def Save2Npy(file_dir, crop_x_y=None, target_frames=None, frame_size=320):
         if target_frames:
             assert (data.shape == (target_frames,
                                    frame_size, frame_size, 3))
+        r_frame = data[np.random.randint(data.shape[0])]
         np.save("processed.npy", np.uint8(data))
+        return r_frame
 
 def convert_dataset_to_npy(src, crop_x_y=None, target_frames=None, frame_size=320):
     path1 = os.path.join(src)
-    Save2Npy(file_dir=path1, crop_x_y=crop_x_y, target_frames=target_frames, frame_size=frame_size)
+    r_frame = Save2Npy(file_dir=path1, crop_x_y=crop_x_y, target_frames=target_frames, frame_size=frame_size)
+    return r_frame
 
 
 """
@@ -2434,8 +2437,8 @@ def qualitative():
     one_hot = False
     lstm_type = 'sepconv' 
 
-    convert_dataset_to_npy(src='./'.format(dataset), crop_x_y=None,
-                                       target_frames=vid_len, frame_size= dataset_frame_size)
+    r_frame = convert_dataset_to_npy(src='./'.format(dataset), crop_x_y=None, target_frames=vid_len,
+                                     frame_size= dataset_frame_size)
 
     test_generator = DataGenerator(X_path='processed.npy'.format(dataset),
                                 batch_size=1,
@@ -2455,28 +2458,22 @@ def qualitative():
     model.load_weights('./ckpt_all/rwf2000_currentModel').expect_partial()
     model.trainable = False
     abuse_perc = evaluate(model, test_generator)
-    return abuse_perc
+    return abuse_perc, r_frame
 
 
-def evaluate(model, datagen, count = 100):
-    classes = {0:"violent", 1:"nonviolent"}
+def evaluate(model, datagen):
     for i, (x,y) in enumerate(datagen):
-        # if i == count:
-        #     break
-        data = x[0]; target = y[0]
-        data = np.squeeze(data)
         p = model.predict(x)
         p = np.squeeze(p)
-        if p >= 0.50:
-            predicted = 1
-        else:
-            predicted = 0
         abuse_perc = 1 - p
         return abuse_perc
 
 def calculate():
-    abuse_perc = qualitative()
-    print(abuse_perc)
+    abuse_perc, r_frame = qualitative()
+    if abuse_perc >= 0.75 :
+        print(abuse_perc, r_frame.shape)
+        # cv2.imwrite("random_frame.jpg", r_frame)
+        return abuse_perc, r_frame
     return abuse_perc
 
 calculate()
